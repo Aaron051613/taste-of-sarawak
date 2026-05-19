@@ -15,15 +15,12 @@ const handleSelect = (type) => {
 		if (type === 'dine-in') {
 			localStorage.removeItem('sb_table')
 			const redirect = route.query.redirect || '/select-table'
-			// Use absolute URL navigation to bypass any router guards causing loops
-			const url = `${window.location.protocol}//${window.location.host}${redirect}`
-			window.location.assign(url)
+			router.push(redirect)
 			return
 		}
 
 		localStorage.removeItem('sb_table')
-		const menuUrl = `${window.location.protocol}//${window.location.host}/menu`
-		window.location.assign(menuUrl)
+		router.push('/menu')
 	} catch (err) {
 		console.error('handleSelect error', err)
 	}

@@ -207,6 +207,7 @@ const resetOrders = async () => {
 
 export default {
 	state,
+	syncFromApi,
 	addOrder,
 	markServingDone,
 	markPaymentDone,

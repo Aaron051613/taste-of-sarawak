@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import orderStore from '../../store/orders'
+import { API_BASE } from '../../services/api'
 
 const TABLE_COUNT = 10
 
@@ -99,6 +100,30 @@ const paymentBadge = (order) => {
 
 const formatMoney = (value) => Number(value || 0).toFixed(2)
 
+let orderStream = null
+
+const startOrderStream = () => {
+	if (typeof window === 'undefined' || typeof EventSource === 'undefined') return
+	if (orderStream) return
+
+	const streamUrl = `${API_BASE}/order-stream.php`
+	orderStream = new EventSource(streamUrl)
+
+	orderStream.onmessage = () => {
+		orderStore.syncFromApi()
+	}
+
+	orderStream.onerror = () => {
+		// Let the browser auto-retry; keep existing data in view.
+	}
+}
+
+const stopOrderStream = () => {
+	if (!orderStream) return
+	orderStream.close()
+	orderStream = null
+}
+
 watch(
 	() => [checkedPendingItems.value, pendingOrders.value],
 	() => {
@@ -114,6 +139,14 @@ watch(
 	},
 	{ deep: true }
 )
+
+onMounted(() => {
+	startOrderStream()
+})
+
+onBeforeUnmount(() => {
+	stopOrderStream()
+})
 </script>
 
 <template>

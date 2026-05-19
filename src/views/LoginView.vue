@@ -15,10 +15,11 @@ const form = reactive({
 
 const handleLogin = async () => {
 	try {
-		const email = form.username.includes('@') ? form.username : 'admin@tasteofsarawak.local'
+		const identifier = form.username.trim()
 		const response = await postJson('auth.php', {
 			action: 'login',
-			email,
+			email: identifier,
+			username: identifier,
 			password: form.password,
 		})
 
@@ -48,14 +49,17 @@ const handleLogin = async () => {
 						<form @submit.prevent="handleLogin">
 							<div class="mb-3">
 								<label class="form-label">Username / Email</label>
-								<input v-model="form.username" class="form-control" type="text" placeholder="Enter username" />
+								<input v-model="form.username" class="form-control" type="text"
+									placeholder="Enter username" />
 							</div>
 							<div class="mb-3">
 								<label class="form-label">Password</label>
-								<input v-model="form.password" class="form-control" type="password" placeholder="Enter password" />
+								<input v-model="form.password" class="form-control" type="password"
+									placeholder="Enter password" />
 							</div>
 							<p v-if="form.error" class="text-danger small mb-3">{{ form.error }}</p>
-							<button class="btn btn-warning w-100 text-dark fw-bold rounded-pill" type="submit">Login</button>
+							<button class="btn btn-warning w-100 text-dark fw-bold rounded-pill"
+								type="submit">Login</button>
 						</form>
 					</div>
 				</div>

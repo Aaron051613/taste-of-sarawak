@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost/taste-api'
+const API_BASE = 'https://taste-of-sarawak-api.onrender.com'
 
 const parseResponse = async (response) => {
 	const text = await response.text()

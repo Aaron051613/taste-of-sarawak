@@ -86,6 +86,7 @@ const addRating = (productId, payload) => {
 			ratingEntry.id = Number(response.rating.id)
 			persist()
 		}
+		void syncFromApi()
 		void logAdminActivity({
 			action: 'Manage Ratings',
 			details: { type: 'create', menuItemId: Number(productId), ratingId: ratingEntry.id },
@@ -104,6 +105,7 @@ const deleteRating = (productId, index) => {
 	if (target?.id) {
 		void deleteJson('ratings.php', { id: target.id })
 			.then(() => {
+				void syncFromApi()
 				void logAdminActivity({
 					action: 'Manage Ratings',
 					details: { type: 'delete', menuItemId: Number(productId), ratingId: target.id },

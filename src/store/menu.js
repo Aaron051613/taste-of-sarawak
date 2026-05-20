@@ -104,11 +104,22 @@ const addMenuItem = async (payload) => {
 	state.items.push(newItem)
 	persist()
 	try {
-		const response = await postJson('menu.php', newItem)
+		const payloadForApi = {
+			name: newItem.name,
+			category: newItem.category,
+			description: newItem.description,
+			image: newItem.image,
+			sizes: newItem.sizes,
+			addons: newItem.addons,
+			drinkOptions: newItem.drinkOptions,
+			sort_order: newItem.id,
+		}
+		const response = await postJson('menu.php', payloadForApi)
 		if (response?.item) {
 			Object.assign(newItem, hydrateMenuItem(response.item))
 			persist()
 		}
+		await syncFromApi()
 		void logAdminActivity({
 			action: 'Add Menu Item',
 			details: { type: 'create', menuItemId: newItem.id, name: newItem.name },

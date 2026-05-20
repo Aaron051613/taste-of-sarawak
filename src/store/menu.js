@@ -1,6 +1,5 @@
 import { computed, reactive } from 'vue'
-import seedMenu from '../data/menu'
-import { deleteJson, getJson, patchJson, postJson } from '../services/api'
+import { API_BASE, deleteJson, getJson, patchJson, postJson } from '../services/api'
 import { logAdminActivity } from '../services/adminAudit'
 
 const STORAGE_KEY = 'ts_menu'
@@ -13,11 +12,13 @@ const imageModules = import.meta.glob('../assets/images/*', {
 const resolveImageSource = (value) => {
 	const raw = String(value || '').trim()
 	if (!raw) return raw
-	if (/^(https?:|data:|blob:|\/)/i.test(raw)) return raw
+	if (/^(https?:|data:|blob:)/i.test(raw)) return raw
+	if (raw.startsWith('/uploads/')) return `${API_BASE}${raw}`
 
 	const fileName = raw.split(/[/\\]/).pop()
 	const matchedPath = Object.keys(imageModules).find((path) => path.endsWith(`/${fileName}`))
-	return matchedPath ? imageModules[matchedPath] : raw
+	if (matchedPath) return imageModules[matchedPath]
+	return `${API_BASE}/uploads/${fileName}`
 }
 
 const hydrateMenuItem = (item) => ({
@@ -37,17 +38,17 @@ const hydrateMenuItem = (item) => ({
 
 const loadMenu = () => {
 	const raw = localStorage.getItem(STORAGE_KEY)
-	if (!raw) return seedMenu.map(hydrateMenuItem)
+	if (!raw) return []
 
 	try {
 		const parsed = JSON.parse(raw)
-		if (!parsed || typeof parsed !== 'object') return seedMenu.map(hydrateMenuItem)
-		if (parsed.version !== STORAGE_VERSION) return seedMenu.map(hydrateMenuItem)
+		if (!parsed || typeof parsed !== 'object') return []
+		if (parsed.version !== STORAGE_VERSION) return []
 		return Array.isArray(parsed.items) && parsed.items.length > 0
 			? parsed.items.map(hydrateMenuItem)
-			: seedMenu.map(hydrateMenuItem)
+			: []
 	} catch (error) {
-		return seedMenu.map(hydrateMenuItem)
+		return []
 	}
 }
 
@@ -62,7 +63,7 @@ const persist = () => {
 const syncFromApi = async () => {
 	try {
 		const response = await getJson('menu.php')
-		if (Array.isArray(response?.items) && response.items.length > 0) {
+		if (Array.isArray(response?.items)) {
 			state.items = response.items.map(hydrateMenuItem)
 			persist()
 		}

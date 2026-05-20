@@ -164,8 +164,9 @@ const updateMenuItem = async (id, updates) => {
 const deleteMenuItem = (id) => {
 	state.items = state.items.filter((item) => item.id !== id)
 	persist()
-	void deleteJson('menu.php', { id })
+	void deleteJson(`menu.php?id=${encodeURIComponent(id)}`)
 		.then(() => {
+			void syncFromApi()
 			void logAdminActivity({
 				action: 'Manage Menu',
 				details: { type: 'delete', menuItemId: id },

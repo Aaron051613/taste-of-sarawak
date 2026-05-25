@@ -81,9 +81,10 @@ const onFileChange = async (e) => {
   const file = e.target.files && e.target.files[0]
   if (!file) return
 
+	const previousImage = form.image
+	const previewUrl = URL.createObjectURL(file)
 	form.uploadMessage = 'Uploading...'
-	form.image = ''
-	form.imagePreview = URL.createObjectURL(file)
+	form.imagePreview = previewUrl
 
   try {
     const fd = new FormData()
@@ -101,14 +102,16 @@ const onFileChange = async (e) => {
 		} catch (error) {
 			data = { raw }
 		}
-    if (!resp.ok) {
+		if (!resp.ok) {
 			form.uploadMessage = data?.message || data?.raw || `Upload failed (${resp.status})`
-      return
-    }
+			form.imagePreview = previousImage
+			return
+		}
 
 		const nextUrl = data?.url || data?.path || ''
 		if (!nextUrl) {
 			form.uploadMessage = 'Upload completed but no URL returned.'
+			form.imagePreview = previousImage
 			return
 		}
 
@@ -116,7 +119,8 @@ const onFileChange = async (e) => {
 		form.imagePreview = nextUrl
 		form.uploadMessage = 'Image uploaded to server.'
   } catch (error) {
-    form.uploadMessage = 'Upload failed: ' + (error?.message || String(error))
+		form.uploadMessage = 'Upload failed: ' + (error?.message || String(error))
+		form.imagePreview = previousImage
   }
 }
 

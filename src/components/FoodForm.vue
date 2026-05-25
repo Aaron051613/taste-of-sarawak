@@ -104,24 +104,27 @@ const onFileChange = async (e) => {
 		}
 		if (!resp.ok) {
 			form.uploadMessage = data?.message || data?.raw || `Upload failed (${resp.status})`
-			form.imagePreview = previousImage
+			form.image = previousImage
+			form.imagePreview = previewUrl
 			return
 		}
 
 		const nextUrl = data?.url || data?.path || ''
 		if (!nextUrl) {
 			form.uploadMessage = 'Upload completed but no URL returned.'
-			form.imagePreview = previousImage
+			form.image = previousImage
+			form.imagePreview = previewUrl
 			return
 		}
 
 		form.image = nextUrl
 		form.imagePreview = nextUrl
 		form.uploadMessage = 'Image uploaded to server.'
-  } catch (error) {
+	} catch (error) {
 		form.uploadMessage = 'Upload failed: ' + (error?.message || String(error))
-		form.imagePreview = previousImage
-  }
+		form.image = previousImage
+		form.imagePreview = previewUrl
+	}
 }
 
 const isValid = computed(() =>

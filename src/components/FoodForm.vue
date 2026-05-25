@@ -81,27 +81,40 @@ const onFileChange = async (e) => {
   const file = e.target.files && e.target.files[0]
   if (!file) return
 
-  form.uploadMessage = ''
-  form.imagePreview = URL.createObjectURL(file)
+	form.uploadMessage = 'Uploading...'
+	form.image = ''
+	form.imagePreview = URL.createObjectURL(file)
 
   try {
     const fd = new FormData()
     fd.append('image', file)
 
-    const resp = await fetch(`${API_BASE}/upload.php`, {
+		const resp = await fetch(`${API_BASE}/upload.php`, {
       method: 'POST',
       body: fd,
     })
 
-    const data = await resp.json()
+		const raw = await resp.text()
+		let data = null
+		try {
+			data = raw ? JSON.parse(raw) : null
+		} catch (error) {
+			data = { raw }
+		}
     if (!resp.ok) {
-      form.uploadMessage = data?.message || 'Upload failed'
+			form.uploadMessage = data?.message || data?.raw || `Upload failed (${resp.status})`
       return
     }
 
-    form.image = data.url || data.path || form.imagePreview
-    form.imagePreview = form.image
-    form.uploadMessage = 'Image uploaded to server.'
+		const nextUrl = data?.url || data?.path || ''
+		if (!nextUrl) {
+			form.uploadMessage = 'Upload completed but no URL returned.'
+			return
+		}
+
+		form.image = nextUrl
+		form.imagePreview = nextUrl
+		form.uploadMessage = 'Image uploaded to server.'
   } catch (error) {
     form.uploadMessage = 'Upload failed: ' + (error?.message || String(error))
   }

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
 	item: {
@@ -13,6 +13,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['submit', 'cancel'])
+
+const isUploading = ref(false)
 
 const form = reactive({
 	name: '',
@@ -83,6 +85,7 @@ const onFileChange = async (e) => {
 
 	const previousImage = form.image
 	const previewUrl = URL.createObjectURL(file)
+	isUploading.value = true
 	form.uploadMessage = 'Uploading...'
 	form.imagePreview = previewUrl
 
@@ -124,10 +127,13 @@ const onFileChange = async (e) => {
 		form.uploadMessage = 'Upload failed: ' + (error?.message || String(error))
 		form.image = previousImage
 		form.imagePreview = previewUrl
+	} finally {
+		isUploading.value = false
 	}
 }
 
 const isValid = computed(() =>
+	!isUploading.value &&
 	form.name.trim() &&
 	form.category.trim() &&
 	form.description.trim() &&
@@ -257,8 +263,9 @@ const submitForm = () => {
 		</div>
 
 		<div class="d-flex justify-content-between align-items-center">
-			<div v-if="!isValid" class="small text-muted">Complete all fields to enable save.</div>
-			<button class="btn btn-warning text-dark fw-bold rounded-pill px-4" type="submit" :disabled="!isValid">{{ submitLabel }}</button>
+			<div v-if="isUploading" class="small text-muted">Uploading image...</div>
+			<div v-else-if="!isValid" class="small text-muted">Complete all fields to enable save.</div>
+			<button class="btn btn-warning text-dark fw-bold rounded-pill px-4" type="submit" :disabled="!isValid || isUploading">{{ submitLabel }}</button>
 		</div>
 	</form>
 </template>
